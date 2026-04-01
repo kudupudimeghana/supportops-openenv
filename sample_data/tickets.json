@@ -1,0 +1,67 @@
+[
+  {
+    "id": "T1",
+    "customer": "Asha",
+    "subject": "Refund not received",
+    "message": "I canceled my subscription 12 days ago and still haven't received my refund.",
+    "category": "billing",
+    "priority": "high",
+    "department": "billing_team",
+    "sla_hours": 24,
+    "sentiment": "frustrated",
+    "needs_escalation": false,
+    "safe_reply_keywords": ["refund", "billing team", "timeline"]
+  },
+  {
+    "id": "T2",
+    "customer": "Rahul",
+    "subject": "Cannot log in",
+    "message": "I reset my password twice and still can't access my account.",
+    "category": "technical",
+    "priority": "high",
+    "department": "tech_support",
+    "sla_hours": 12,
+    "sentiment": "frustrated",
+    "needs_escalation": false,
+    "safe_reply_keywords": ["login", "reset", "access"]
+  },
+  {
+    "id": "T3",
+    "customer": "Neha",
+    "subject": "Feature request",
+    "message": "Can you add dark mode to the dashboard?",
+    "category": "feature_request",
+    "priority": "low",
+    "department": "product_team",
+    "sla_hours": 72,
+    "sentiment": "calm",
+    "needs_escalation": false,
+    "safe_reply_keywords": ["feature", "feedback", "product team"]
+  },
+  {
+    "id": "T4",
+    "customer": "Kiran",
+    "subject": "Charged twice",
+    "message": "I was billed two times for the same plan this month.",
+    "category": "billing",
+    "priority": "high",
+    "department": "billing_team",
+    "sla_hours": 6,
+    "sentiment": "angry",
+    "needs_escalation": true,
+    "safe_reply_keywords": ["billing", "duplicate", "investigate"]
+  },
+  {
+    "id": "T5",
+    "customer": "Divya",
+    "subject": "Account deletion request",
+    "message": "Please permanently delete my account and all associated data.",
+    "category": "compliance",
+    "priority": "medium",
+    "department": "privacy_team",
+    "sla_hours": 24,
+    "sentiment": "serious",
+    "needs_escalation": true,
+    "safe_reply_keywords": ["delete", "privacy", "request"]
+  }
+]

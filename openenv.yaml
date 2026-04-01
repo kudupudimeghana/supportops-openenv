@@ -1,0 +1,25 @@
+name: supportops-openenv
+description: >
+  A real-world customer support ticket triage environment for training and evaluating AI agents.
+version: 2.0.0
+
+entrypoint:
+  type: http
+  base_url: http://localhost:7860
+
+api:
+  reset: /reset
+  step: /step
+  state: /state
+
+observation_model: Observation
+action_model: Action
+reward_range: [0.0, 1.0]
+
+tasks:
+  - id: easy
+    description: Handle a single customer support ticket by classifying, prioritizing, routing, replying, and resolving it correctly.
+  - id: medium
+    description: Handle two customer support tickets with correct triage, routing, and escalation decisions.
+  - id: hard
+    description: Handle a mixed support queue with multiple ticket types, routing decisions, escalation logic, and safe reply drafting.
