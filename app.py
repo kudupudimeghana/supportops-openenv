@@ -31,14 +31,28 @@ def reset(payload: Optional[dict] = Body(default=None)):
     if task_id not in ["easy", "medium", "hard"]:
         task_id = "easy"
 
-    return env.reset(task_id).model_dump()
+    result = env.reset(task_id)
+
+    return {
+        "observation": result.observation.model_dump()
+    }
 
 
 @app.get("/state")
 def state():
-    return env.state().model_dump()
+    result = env.state()
+    return {
+        "observation": result.observation.model_dump()
+    }
 
 
 @app.post("/step")
 def step(action: Action):
-    return env.step(action.model_dump()).model_dump()
+    result = env.step(action.model_dump())
+
+    return {
+        "observation": result.observation.model_dump(),
+        "reward": result.reward,
+        "done": result.done,
+        "info": result.info
+    }
