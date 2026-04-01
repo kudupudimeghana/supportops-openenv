@@ -3,5 +3,7 @@ services:
     name: supportops-openenv
     env: python
     plan: free
+    rootDir: .
     buildCommand: pip install -r requirements.txt
     startCommand: python -m uvicorn app:app --host 0.0.0.0 --port $PORT
+    autoDeploy: true
