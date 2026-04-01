@@ -1,9 +1,12 @@
 name: supportops-openenv
-description: Customer support ticket triage environment for AI agents
 version: 1.0.0
+description: Customer support ticket triage environment for AI agents
 
-base_url: http://localhost:7860
+deployment:
+  mode: http
+  base_url: http://localhost:7860
 
-reset_endpoint: /reset
-state_endpoint: /state
-step_endpoint: /step
+endpoints:
+  reset: /reset
+  state: /state
+  step: /step
