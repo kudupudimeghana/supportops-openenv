@@ -22,14 +22,11 @@ class Ticket(BaseModel):
     safe_reply_keywords: List[str]
 
 
-class ActionPayload(BaseModel):
+
+class Action(BaseModel):
     type: Literal["classify", "prioritize", "route", "reply", "escalate", "resolve"]
     ticket_id: str
     value: Optional[str] = None
-
-
-class Action(BaseModel):
-    action: ActionPayload
 
 
 class Observation(BaseModel):
