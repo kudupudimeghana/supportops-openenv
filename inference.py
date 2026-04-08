@@ -1,4 +1,5 @@
 import os
+import json
 import requests
 
 BASE_URL = os.getenv("API_BASE_URL", "http://localhost:7860")
@@ -77,15 +78,16 @@ def extract_observation(data):
 
 
 def run_task(task_id):
+    print(f"[START] {task_id}")
+
     try:
         r = requests.post(f"{BASE_URL}/reset", json={"task_id": task_id}, timeout=30)
         r.raise_for_status()
         obs = extract_observation(r.json())
     except Exception:
-        return 0.0
+        print(f"[END] {task_id}")
+        return
 
-    total_reward = 0.0
-    steps = 0
     max_loops = 50
     loop_count = 0
 
@@ -103,15 +105,13 @@ def run_task(task_id):
         task_done = False
 
         for action in actions:
+            # REQUIRED structured step output
+            print("[STEP]", json.dumps(action))
+
             try:
                 resp = requests.post(f"{BASE_URL}/step", json=action, timeout=30)
                 resp.raise_for_status()
-
                 resp_data = resp.json()
-
-                reward = resp_data.get("reward", 0)
-                total_reward += reward
-                steps += 1
 
                 new_obs = extract_observation(resp_data)
                 if new_obs:
@@ -122,7 +122,7 @@ def run_task(task_id):
                     break
 
             except Exception:
-                return 0.0
+                break
 
         if task_done:
             break
@@ -130,20 +130,13 @@ def run_task(task_id):
         if not obs.get("current_ticket"):
             break
 
-    score = round(min(1.0, total_reward / max(1, steps)), 2)
-    return score
+    print(f"[END] {task_id}")
 
 
 if __name__ == "__main__":
-    scores = {}
-
     for task in ["easy", "medium", "hard"]:
         try:
-            scores[task] = run_task(task)
+            run_task(task)
         except Exception:
-            scores[task] = 0.0
-
-    avg = round(sum(scores.values()) / len(scores), 2)
-
-    print(scores)
-    print(avg)
+            print(f"[START] {task}")
+            print(f"[END] {task}")
