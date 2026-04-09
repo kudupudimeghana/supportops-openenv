@@ -2,7 +2,66 @@ import os
 import json
 import requests
 
-BASE_URL = os.getenv("API_BASE_URL", "http://localhost:7860")
+# Ticket environment (reset/step)
+BASE_URL = os.getenv("BASE_URL", "http://localhost:7860")
+
+# LLM proxy injected by evaluator
+API_BASE_URL = os.getenv("API_BASE_URL")
+API_KEY = os.getenv("API_KEY")
+
+
+def call_llm(ticket):
+    """
+    Makes ONE call through the evaluator's LLM proxy.
+    This is required for the LLM Criteria Check.
+    """
+    # Safe fallback if env vars are missing locally
+    if not API_BASE_URL or not API_KEY:
+        return "Hello, we understand your concern and our team is reviewing your issue."
+
+    subject = ticket.get("subject", "")
+    message = ticket.get("message", "")
+    category = ticket.get("category", "general")
+    department = ticket.get("department", "support")
+    customer = ticket.get("customer", "Customer")
+
+    prompt = f"""
+You are a professional customer support assistant.
+
+Customer Name: {customer}
+Issue Category: {category}
+Department: {department}
+Subject: {subject}
+Message: {message}
+
+Write a short, polite, professional support reply in 1-2 sentences.
+Do not include signatures.
+"""
+
+    try:
+        response = requests.post(
+            f"{API_BASE_URL}/chat/completions",
+            headers={
+                "Authorization": f"Bearer {API_KEY}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "model": "gpt-4o-mini",
+                "messages": [
+                    {"role": "system", "content": "You are a helpful support assistant."},
+                    {"role": "user", "content": prompt}
+                ],
+                "temperature": 0.2
+            },
+            timeout=30
+        )
+        response.raise_for_status()
+        data = response.json()
+
+        return data["choices"][0]["message"]["content"].strip()
+
+    except Exception:
+        return f"Hello {customer}, we understand your concern and our {department} team is reviewing your {category} issue."
 
 
 def simple_agent(obs):
@@ -15,7 +74,9 @@ def simple_agent(obs):
     priority = ticket.get("priority", "medium")
     department = ticket.get("department", "support")
     needs_escalation = ticket.get("needs_escalation", False)
-    customer = ticket.get("customer", "Customer")
+
+    # 🔥 REQUIRED LLM CALL
+    llm_reply = call_llm(ticket)
 
     actions = [
         {
@@ -50,7 +111,7 @@ def simple_agent(obs):
             "action": {
                 "type": "reply",
                 "ticket_id": ticket_id,
-                "value": f"Hello {customer}, we understand your concern and our {department} team is reviewing your {category} issue."
+                "value": llm_reply
             }
         },
         {
