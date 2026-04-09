@@ -17,7 +17,10 @@ def call_llm(ticket):
     """
     # Safe fallback if env vars are missing locally
     if not API_BASE_URL or not API_KEY:
-        return "Hello, we understand your concern and our team is reviewing your issue."
+        customer = ticket.get("customer", "Customer")
+        department = ticket.get("department", "support")
+        category = ticket.get("category", "general")
+        return f"Hello {customer}, we understand your concern and our {department} team is reviewing your {category} issue."
 
     subject = ticket.get("subject", "")
     message = ticket.get("message", "")
@@ -75,7 +78,7 @@ def simple_agent(obs):
     department = ticket.get("department", "support")
     needs_escalation = ticket.get("needs_escalation", False)
 
-    # 🔥 REQUIRED LLM CALL
+    # Required LLM call
     llm_reply = call_llm(ticket)
 
     actions = [
@@ -146,11 +149,14 @@ def run_task(task_id):
         r.raise_for_status()
         obs = extract_observation(r.json())
     except Exception:
+        print(f"[SCORE] {task_id} 0.01")
         print(f"[END] {task_id}")
-        return
+        return 0.01
 
     max_loops = 50
     loop_count = 0
+    total_reward = 0.0
+    steps = 0
 
     while loop_count < max_loops:
         loop_count += 1
@@ -174,6 +180,10 @@ def run_task(task_id):
                 resp.raise_for_status()
                 resp_data = resp.json()
 
+                reward = resp_data.get("reward", 0)
+                total_reward += reward
+                steps += 1
+
                 new_obs = extract_observation(resp_data)
                 if new_obs:
                     obs = new_obs
@@ -191,13 +201,33 @@ def run_task(task_id):
         if not obs.get("current_ticket"):
             break
 
+    # Score must be strictly between 0 and 1
+    raw_score = total_reward / max(1, steps)
+
+    if raw_score <= 0:
+        score = 0.01
+    elif raw_score >= 1:
+        score = 0.99
+    else:
+        score = round(raw_score, 2)
+
+    print(f"[SCORE] {task_id} {score}")
     print(f"[END] {task_id}")
+    return score
 
 
 if __name__ == "__main__":
+    scores = {}
+
     for task in ["easy", "medium", "hard"]:
         try:
-            run_task(task)
+            scores[task] = run_task(task)
         except Exception:
             print(f"[START] {task}")
+            print(f"[SCORE] {task} 0.01")
             print(f"[END] {task}")
+            scores[task] = 0.01
+
+    avg = round(sum(scores.values()) / len(scores), 2)
+    print("[FINAL]", json.dumps(scores))
+    print("[AVERAGE]", avg)
