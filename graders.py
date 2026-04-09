@@ -1,12 +1,13 @@
 def clamp_score(score: float) -> float:
     """
     Ensures score is strictly between 0 and 1.
+    Never returns 0.0 or 1.0
     """
     if score <= 0:
         return 0.01
-    elif score >= 1:
+    if score >= 1:
         return 0.99
-    return round(score, 2)
+    return round(float(score), 2)
 
 
 def score_classification(pred: str, gold: str) -> float:
