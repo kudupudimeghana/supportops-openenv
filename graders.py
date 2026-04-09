@@ -36,3 +36,31 @@ def score_reply(reply: str, required_keywords: list[str]) -> float:
     raw_score = hits / len(keywords)
 
     return clamp_score(raw_score)
+
+
+def build_scores(prediction: dict, gold: dict) -> dict:
+    scores = {
+        "classification": score_classification(
+            prediction.get("classification", ""),
+            gold.get("classification", "")
+        ),
+        "priority": score_priority(
+            prediction.get("priority", ""),
+            gold.get("priority", "")
+        ),
+        "routing": score_routing(
+            prediction.get("routing", ""),
+            gold.get("routing", "")
+        ),
+        "escalation": score_escalation(
+            prediction.get("escalation", False),
+            gold.get("escalation", False)
+        ),
+        "reply": score_reply(
+            prediction.get("reply", ""),
+            gold.get("required_keywords", [])
+        )
+    }
+
+    # EXTRA SAFETY: clamp every final task score again
+    return {k: clamp_score(v) for k, v in scores.items()}
