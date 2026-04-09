@@ -10,6 +10,17 @@ from graders import (
 )
 
 
+def clamp_score(score: float) -> float:
+    """
+    Ensures every reward/score stays strictly between 0 and 1.
+    """
+    if score <= 0:
+        return 0.01
+    elif score >= 1:
+        return 0.99
+    return round(score, 2)
+
+
 class SupportEnv:
     def __init__(self, task_id: str = "easy"):
         self.task_id = task_id
@@ -50,13 +61,13 @@ class SupportEnv:
 
     def step(self, action_dict):
         action = Action(**action_dict).action
-        reward = 0.0
+        reward = 0.01
         info = {}
 
         if not self.queue:
             return StepResponse(
                 observation=self._obs(),
-                reward=0.0,
+                reward=0.01,
                 done=True,
                 info={"message": "All tickets processed"}
             )
@@ -98,18 +109,20 @@ class SupportEnv:
                 reward -= 0.2
                 info["error"] = "Unknown action type"
 
+        reward = clamp_score(reward)
+
         self.history.append({
             "ticket_id": action.ticket_id,
             "action_type": action.type,
             "value": action.value,
-            "reward": round(reward, 2)
+            "reward": reward
         })
 
         done = len(self.queue) == 0
 
         return StepResponse(
             observation=self._obs(),
-            reward=round(reward, 2),
+            reward=reward,
             done=done,
             info=info
         )
