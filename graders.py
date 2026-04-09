@@ -1,7 +1,5 @@
+# 1) Define ONCE
 def clamp_score(score: float) -> float:
-    """
-    Ensures score is strictly between 0 and 1.
-    """
     if score <= 0:
         return 0.01
     elif score >= 1:
@@ -9,6 +7,7 @@ def clamp_score(score: float) -> float:
     return min(max(round(score, 2), 0.01), 0.99)
 
 
+# 2) Use it in all scoring functions
 def score_classification(pred: str, gold: str) -> float:
     return clamp_score(1.0 if pred.strip().lower() == gold.strip().lower() else 0.0)
 
